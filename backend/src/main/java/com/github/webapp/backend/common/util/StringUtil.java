@@ -1,5 +1,10 @@
 package com.github.webapp.backend.common.util;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Random;
+
 /**
  * @author wangweijiang
  * @since 2019-10-08 20:43
@@ -114,5 +119,35 @@ public class StringUtil {
 
         format = replace(format, replaceOperator, "%s");
         return formatIfArgs(format, args);
+    }
+
+    public static String getExceptionMsg(Throwable e) {
+        StringWriter sw = new StringWriter();
+
+        try {
+            e.printStackTrace(new PrintWriter(sw));
+        } finally {
+            try {
+                sw.close();
+            } catch (IOException var8) {
+                var8.printStackTrace();
+            }
+
+        }
+
+        return sw.getBuffer().toString().replaceAll("\\$", "T");
+    }
+
+    public static String getRandomString(int length) {
+        String base = "abcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+
+        for(int i = 0; i < length; ++i) {
+            int number = random.nextInt(base.length());
+            sb.append(base.charAt(number));
+        }
+
+        return sb.toString();
     }
 }

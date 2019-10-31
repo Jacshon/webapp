@@ -11,6 +11,9 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author wangweijiang
@@ -43,5 +46,23 @@ public class RequestContextUtil implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    public static Map<String, String> getRequestParameters() {
+        HashMap<String, String> values = new HashMap();
+        HttpServletRequest request = getRequest();
+        if (request == null) {
+            return values;
+        } else {
+            Enumeration enums = request.getParameterNames();
+
+            while(enums.hasMoreElements()) {
+                String paramName = (String)enums.nextElement();
+                String paramValue = request.getParameter(paramName);
+                values.put(paramName, paramValue);
+            }
+
+            return values;
+        }
     }
 }
