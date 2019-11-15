@@ -4,6 +4,7 @@ import com.github.webapp.backend.common.auth.context.LoginContextHolder;
 import com.github.webapp.backend.common.auth.model.LoginUser;
 import com.github.webapp.backend.common.base.consts.ConstantsContext;
 import com.github.webapp.backend.common.constant.ManagerStatus;
+import com.github.webapp.backend.common.constant.factory.ConstantFactory;
 import com.github.webapp.backend.common.util.StringUtil;
 import com.github.webapp.backend.sys.entity.SysUser;
 import com.github.webapp.backend.sys.entity.dto.SysUserDto;
@@ -76,7 +77,8 @@ public class UserFactory {
         if (user == null) {
             return new HashMap<>();
         } else {
-            Map<String, Object> map = BeanUtil.beanToMap(user);
+//            Map<String, Object> map = BeanUtil.beanToMap(user);
+            Map<String, Object> map = new HashMap<>();
             map.remove("password");
             map.remove("salt");
             map.put("birthday", DateUtil.formatDate(user.getBirthday()));
@@ -97,7 +99,8 @@ public class UserFactory {
         loginUser.setId(user.getId());
         loginUser.setAccount(user.getAccount());
         loginUser.setDeptId(user.getDeptId());
-        loginUser.setDeptName(ConstantFactory.me().getDeptName(user.getDeptId()));
+//        loginUser.setDeptName(ConstantFactory.me().getDeptName(user.getDeptId()));
+        loginUser.setDeptName("");
         loginUser.setName(user.getName());
         loginUser.setEmail(user.getEmail());
 

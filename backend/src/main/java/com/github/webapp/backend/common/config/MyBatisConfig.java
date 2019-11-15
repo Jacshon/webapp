@@ -21,7 +21,7 @@ public class MyBatisConfig {
     public MapperScannerConfigurer mapperScannerConfigurer() {
         MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
         mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactory");
-        mapperScannerConfigurer.setBasePackage("com.github.webapp.backend.demo.mapper");
+        mapperScannerConfigurer.setBasePackage("com.github.webapp.backend.*.mapper");
 
         Properties properties = new Properties();
         properties.setProperty("mappers", CrudMapper.class.getName());

@@ -2,6 +2,7 @@ package com.github.webapp.backend.auth.cache.impl;
 
 import com.github.webapp.backend.common.auth.model.LoginUser;
 import com.github.webapp.backend.auth.cache.SessionManager;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author wangweijiang
  * @since 2019-10-29 14:24
  */
+@Component
 public class DefaultSessionManager implements SessionManager {
 
     private Map<String, LoginUser> caches = new ConcurrentHashMap<>();

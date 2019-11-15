@@ -22,4 +22,6 @@ public class SysRole extends BasePO<Long> {
     @GeneratedValue(generator = "JDBC")
     private Long id;
 
+    private String name;
+
 }

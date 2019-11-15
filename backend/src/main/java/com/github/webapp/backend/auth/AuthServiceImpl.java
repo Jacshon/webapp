@@ -1,23 +1,24 @@
 package com.github.webapp.backend.auth;
 
+import com.github.webapp.backend.auth.cache.SessionManager;
 import com.github.webapp.backend.common.auth.context.LoginContextHolder;
 import com.github.webapp.backend.common.auth.jwt.JwtTokenUtil;
 import com.github.webapp.backend.common.auth.jwt.payload.JwtPayLoad;
 import com.github.webapp.backend.common.auth.model.LoginUser;
 import com.github.webapp.backend.common.auth.service.AuthService;
 import com.github.webapp.backend.common.auth.util.SpringContextHolder;
-import com.github.webapp.backend.auth.cache.SessionManager;
 import com.github.webapp.backend.common.constant.ManagerStatus;
+import com.github.webapp.backend.common.constant.factory.ConstantFactory;
 import com.github.webapp.backend.common.exception.PermissionForbiddenException;
 import com.github.webapp.backend.common.exception.UserNotLoginException;
 import com.github.webapp.backend.common.util.*;
 import com.github.webapp.backend.log.LogManager;
 import com.github.webapp.backend.log.factory.LogTaskFactory;
 import com.github.webapp.backend.sys.entity.SysUser;
-import com.github.webapp.backend.sys.mapper.SysMenuMapper;
-import com.github.webapp.backend.sys.mapper.SysUserMapper;
+import com.github.webapp.backend.sys.factory.UserFactory;
+import com.github.webapp.backend.sys.service.SysDictService;
+import com.github.webapp.backend.sys.service.SysMenuService;
 import com.github.webapp.backend.sys.service.SysUserService;
-import org.apache.commons.collections.functors.ConstantFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
@@ -38,14 +39,12 @@ import static com.github.webapp.backend.common.enums.ResponseCode.USER_NOT_EXIST
  * @since 2019-10-29 14:25
  */
 @Service
-@DependsOn("springContextHolder")
-@Transactional(rollbackFor = Exception.class, readOnly = true)
 public class AuthServiceImpl  implements AuthService{
     @Autowired
     private SysUserService sysUserService;
 
     @Autowired
-    private SysMenuMapper sysMenuMapper;
+    private SysMenuService sysMenuService;
 
     @Autowired
     private SysDictService dictService;
@@ -156,10 +155,10 @@ public class AuthServiceImpl  implements AuthService{
         LoginUser loginUser = UserFactory.createLoginUser(user);
 
         //用户角色数组
-        Long[] roleArray = Convert.toLongArray(user.getRoleId());
+        String[] roleArray = user.getRoleId().split(",");
 
         //如果角色是空就直接返回
-        if (roleArray == null || roleArray.length == 0) {
+        if (roleArray.length == 0) {
             return loginUser;
         }
 
@@ -167,21 +166,24 @@ public class AuthServiceImpl  implements AuthService{
         List<Long> roleList = new ArrayList<>();
         List<String> roleNameList = new ArrayList<>();
         List<String> roleTipList = new ArrayList<>();
-        for (Long roleId : roleArray) {
-            roleList.add(roleId);
-            roleNameList.add(ConstantFactory.me().getSingleRoleName(roleId));
-            roleTipList.add(ConstantFactory.me().getSingleRoleTip(roleId));
+        for (String roleId : roleArray) {
+            if (StringUtil.isEmpty(roleId)) {
+                continue;
+            }
+            roleList.add(Long.valueOf(roleId));
+//            roleNameList.add(ConstantFactory.me().getSingleRoleName(roleId));
+//            roleTipList.add(ConstantFactory.me().getSingleRoleTip(roleId));
         }
         loginUser.setRoleList(roleList);
         loginUser.setRoleNames(roleNameList);
         loginUser.setRoleTips(roleTipList);
 
-        //根据角色获取系统的类型
-        List<String> systemTypes = this.menuMapper.getMenusTypesByRoleIds(roleList);
-
-        //通过字典编码
-        List<Map<String, Object>> dictsByCodes = dictService.getDictsByCodes(systemTypes);
-        loginUser.setSystemTypes(dictsByCodes);
+//        //根据角色获取系统的类型
+//        List<String> systemTypes = this.sysMenuService.getMenusTypesByRoleIds(roleList);
+//
+//        //通过字典编码
+//        List<Map<String, Object>> dictsByCodes = dictService.getDictsByCodes(systemTypes);
+//        loginUser.setSystemTypes(dictsByCodes);
 
         //设置权限列表
         Set<String> permissionSet = new HashSet<>();
@@ -202,7 +204,7 @@ public class AuthServiceImpl  implements AuthService{
 
     @Override
     public List<String> findPermissionsByRoleId(Long roleId) {
-        return menuMapper.getResUrlsByRoleId(roleId);
+        return null;//sysUserService.getResUrlsByRoleId(roleId);
     }
 
     @Override
@@ -211,11 +213,11 @@ public class AuthServiceImpl  implements AuthService{
         if (null == user) {
             return false;
         }
-        ArrayList<String> objects = CollectionUtil.newArrayList(roleNames);
-        String join = CollectionUtil.join(objects, ",");
-        if (LoginContextHolder.getContext().hasAnyRoles(join)) {
-            return true;
-        }
+//        ArrayList<String> objects = (ArrayList)Arrays.asList(roleNames);
+//        String join = CollectionUtil.join(objects, ",");
+//        if (LoginContextHolder.getContext().hasAnyRoles(join)) {
+//            return true;
+//        }
         return false;
     }
 
@@ -226,7 +228,8 @@ public class AuthServiceImpl  implements AuthService{
         if (null == user) {
             return false;
         }
-        String requestURI = request.getRequestURI().replaceFirst(ConfigListener.getConf().get("contextPath"), "");
+//        String requestURI = request.getRequestURI().replaceFirst(ConfigListener.getConf().get("contextPath"), "");
+        String requestURI = request.getRequestURI();
         String[] str = requestURI.split("/");
         if (str.length > 3) {
             requestURI = "/" + str[1] + "/" + str[2];
